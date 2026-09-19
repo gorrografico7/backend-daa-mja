@@ -213,19 +213,22 @@ def get_movimientos(limit: int = 30):
 
 def _send_fcm(title: str, body: str):
     if not firebase_admin._apps:
+        print("[FCM] Firebase no inicializado")
         return
     with SessionLocal() as db:
         row = db.get(FcmToken, 1)
         if not row:
+            print("[FCM] Sin token registrado")
             return
         token = row.token
     try:
-        messaging.send(messaging.Message(
+        result = messaging.send(messaging.Message(
             notification=messaging.Notification(title=title, body=body),
             token=token,
         ))
-    except Exception:
-        pass
+        print(f"[FCM] Enviado OK: {result}")
+    except Exception as e:
+        print(f"[FCM] Error: {e}")
 
 
 from pydantic import BaseModel
@@ -242,6 +245,20 @@ def set_fcm_token(body: FcmTokenBody):
         else:
             db.add(FcmToken(id=1, token=body.token))
         db.commit()
+    print(f"[FCM] Token registrado: {body.token[:20]}...")
+    return {"ok": True}
+
+@app.get("/fcm-token/estado", summary="Ver si hay token FCM guardado", tags=["FCM"])
+def get_fcm_token_estado():
+    with SessionLocal() as db:
+        row = db.get(FcmToken, 1)
+        if not row:
+            return {"token": None}
+        return {"token": row.token[:20] + "..."}
+
+@app.post("/fcm-token/test", summary="Enviar notificación de prueba", tags=["FCM"])
+def test_fcm():
+    _send_fcm("🔔 Prueba", "Si ves esto, FCM funciona correctamente")
     return {"ok": True}
 
 
