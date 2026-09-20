@@ -27,8 +27,9 @@ SCREEN_TAGS = {
     3: "Angélica",
     4: "Escandalosos",
     5: "Tú y yo",
-    6: "Fecha entrega",
-    7: "Interacción",
+    6: "Interacción",
+    7: "Fecha entrega",
+    8: "Regalos",
 }
 
 engine = create_engine(DATABASE_URL)
